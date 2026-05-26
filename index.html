@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Test interactivo · 40 preguntas de desarrollo</title>
+<style>
+  :root{
+    --azul:#2c3e50; --verde:#27ae60; --rojo:#c0392b; --ambar:#e67e22;
+    --gris:#f4f6f8; --borde:#dce1e6;
+  }
+  *{box-sizing:border-box;}
+  html{-webkit-text-size-adjust:100%;}
+  body{
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+    margin:0; background:var(--gris); color:#1a1a1a; line-height:1.5;
+    overflow-x:hidden;
+  }
+  header{
+    background:var(--azul); color:#fff; padding:16px 20px;
+    padding-left:max(20px, env(safe-area-inset-left));
+    padding-right:max(20px, env(safe-area-inset-right));
+    position:sticky; top:0; z-index:10; box-shadow:0 2px 8px rgba(0,0,0,.15);
+  }
+  header h1{margin:0; font-size:1.2rem;}
+  header p{margin:4px 0 0; font-size:.82rem; opacity:.85;}
+  .barra{display:flex; gap:10px; align-items:center; margin-top:10px; flex-wrap:wrap;}
+  .barra button{
+    background:#fff; color:var(--azul); border:none; padding:9px 14px;
+    border-radius:6px; font-weight:600; cursor:pointer; font-size:.85rem;
+    min-height:40px;
+  }
+  .barra button:hover{background:#e8edf2;}
+  #marcador{font-weight:700; font-size:.95rem;}
+  main{max-width:840px; margin:0 auto; padding:20px 16px 80px;}
+  .bloque-tit{
+    font-size:1.05rem; color:var(--azul); font-weight:700;
+    border-bottom:2px solid var(--azul); padding-bottom:6px; margin:28px 0 12px;
+  }
+  .card{
+    background:#fff; border:1px solid var(--borde); border-radius:10px;
+    padding:16px 18px; margin-bottom:16px; box-shadow:0 1px 3px rgba(0,0,0,.05);
+  }
+  .preg{font-weight:600; color:var(--azul); margin-bottom:10px;}
+  .preg .num{color:var(--rojo); font-weight:700;}
+  textarea{
+    width:100%; min-height:90px; padding:10px; border:1px solid var(--borde);
+    border-radius:8px; font-family:inherit; font-size:16px; resize:vertical;
+  }
+  textarea:focus{outline:2px solid var(--azul); border-color:var(--azul);}
+  .acciones{display:flex; gap:10px; margin-top:10px; flex-wrap:wrap;}
+  .acciones button{
+    border:none; border-radius:6px; padding:10px 16px; font-weight:600;
+    cursor:pointer; font-size:.85rem; min-height:42px;
+  }
+  .btn-corr{background:var(--verde); color:#fff;}
+  .btn-sol{background:#ecf0f1; color:var(--azul);}
+  .resultado{margin-top:12px; display:none;}
+  .puntuacion{font-weight:700; margin-bottom:8px;}
+  .conceptos{font-size:.85rem; margin:6px 0;}
+  .chip{
+    display:inline-block; padding:2px 9px; border-radius:12px; margin:2px;
+    font-size:.78rem; font-weight:600;
+  }
+  .chip.ok{background:#d5f4e2; color:#1d7a45;}
+  .chip.no{background:#fbe2dd; color:#a8321f;}
+  .modelo{
+    background:#f0f6ff; border-left:4px solid var(--azul); padding:10px 12px;
+    border-radius:0 8px 8px 0; margin-top:10px; font-size:.92rem; text-align:justify;
+  }
+  .modelo strong{color:var(--azul);}
+  footer{text-align:center; font-size:.8rem; color:#888; padding:20px;}
+  .pista{font-size:.78rem; color:#999; margin-top:4px;}
+
+  /* ---- Móviles ---- */
+  @media (max-width:600px){
+    header{padding:12px 14px;}
+    header h1{font-size:1.05rem;}
+    header p{font-size:.75rem;}
+    .barra{gap:8px;}
+    .barra button{flex:1 1 auto; padding:10px 8px; font-size:.8rem;}
+    #marcador{flex-basis:100%; font-size:.85rem; margin-top:2px;}
+    main{padding:14px 12px 70px;}
+    .bloque-tit{font-size:.98rem; margin:22px 0 10px;}
+    .card{padding:13px 14px; border-radius:8px;}
+    .preg{font-size:.97rem;}
+    .acciones button{flex:1 1 auto;}
+    .modelo{font-size:.9rem; text-align:left;}
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>Test interactivo de desarrollo</h1>
+  <p>Organización y Gestión de Instituciones Educativas · Grado en Educación Social · UIV</p>
+  <div class="barra">
+    <button onclick="corregirTodo()">Corregir todo</button>
+    <button onclick="mostrarTodas()">Ver soluciones</button>
+    <button onclick="reiniciar()">Reiniciar</button>
+    <span id="marcador">Sin corregir</span>
+  </div>
+</header>
+<main id="contenedor"></main>
+<footer>40 preguntas nuevas · Escribe tu respuesta y pulsa «Corregir». La corrección detecta conceptos clave.</footer>
+
+<script>
+// ---------- BANCO DE PREGUNTAS ----------
+// clave = conceptos que deben aparecer (se admiten sinónimos con "|")
+const bloques = [
+ {
+  titulo:"Bloque I · Temas 1 y 2: La institución educativa como organización",
+  preguntas:[
+   {p:"¿Qué se quiere decir al afirmar que la institución educativa es un «sistema vivo» y no algo neutro ni inmutable?",
+    clave:["cambio|cambiante|continuo","valores","significados|relaciones","contexto|social|político|cultural"],
+    m:"Significa que la institución educativa es una configuración de prácticas en diálogo con cambios políticos, sociales y culturales. Está en continuo cambio y genera valores, relaciones y significados compartidos. No es neutra porque toma posición sobre qué y cómo educar, ni inmutable porque su normativa e historia evolucionan y sus miembros deben adaptarse a la organización social en la que operan."},
+   {p:"Según Bermejo (2017), ¿en qué sentido la misión actúa como «elemento legitimador» de la institución?",
+    clave:["legitim","sociedad|comunidad|social","justificar|por qué existe|aporta","identidad|coherencia"],
+    m:"La misión es legitimadora porque obliga a la institución a justificar ante la sociedad por qué existe y qué aporta al bien común. Sin una misión clara la institución se fragmenta, dispersa esfuerzos y pierde legitimidad. Además vincula lo formal con lo informal, dotando de identidad y sirviendo como criterio de coherencia interna entre los discursos oficiales y las prácticas cotidianas."},
+   {p:"Pon un ejemplo de cómo una misión deja de ser un documento abstracto para convertirse en un «motor organizativo».",
+    clave:["intercultural|inclusión|diversidad|acogida","plan|programa|proyecto|acción","práctica|concreta|currículo|mediación"],
+    m:"Cuando un centro redefine su misión incorporando la perspectiva intercultural, no solo cambia su discurso: introduce planes de acogida para alumnado migrante, fomenta la mediación lingüística y adapta los currículos. Así la misión pasa de ser un texto abstracto a orientar decisiones concretas, convirtiéndose en motor organizativo que moviliza recursos y prácticas reales."},
+   {p:"Explica la afirmación «el formal sin el informal genera rigidez y el informal sin el formal desemboca en desorden».",
+    clave:["formal","informal","rigidez|burocra","desorden|arbitrari|caos","equilibrio|inseparable|ambos"],
+    m:"Bermejo (2017) insiste en que estructura formal e informal son inseparables. Solo lo formal (órganos, normas, planes) produce rigidez burocrática y aplicación mecánica sin compromiso real. Solo lo informal (relaciones, confianza, normas implícitas) produce desorden y arbitrariedad sin marco común. El buen funcionamiento exige equilibrio entre ambos planos, porque uno sostiene y legitima al otro."},
+   {p:"¿Por qué resulta clave para el educador social «leer los espacios invisibles» de la organización?",
+    clave:["informal|invisible|implícit","confianza|liderazgo|redes|poder","convivencia|mediación|conflicto|participación","fracas|bloque|negocia"],
+    m:"Porque las instituciones no se explican solo desde sus estructuras formales: las culturas organizativas, las redes de confianza y los liderazgos cotidianos influyen tanto como los reglamentos. Las intervenciones socioeducativas suelen fracasar cuando ignoran esos espacios informales donde realmente se negocian las normas de convivencia. Leerlos permite al educador social mediar conflictos, promover participación y dinamizar la comunidad de forma eficaz."},
+   {p:"¿Qué relación tiene la institución educativa con el ODS 4 y la alfabetización mediática e informacional?",
+    clave:["ODS 4|educación de calidad","alfabetización mediática|informacional","infoxicación|información|ciudadan","transformación|agente|social"],
+    m:"La escuela actúa como agente de transformación social, y en ese marco cobra relevancia el ODS 4 (educación de calidad) y la alfabetización mediática e informacional. Esta última busca que toda la ciudadanía sea capaz de gestionar el mundo de infoxicación actual, seleccionando y valorando críticamente la información. Así la institución contribuye al bien común formando ciudadanos competentes en un entorno saturado de datos."},
+   {p:"Describe la diferencia de dimensión (formal/informal) entre los niveles macro, meso y micro.",
+    clave:["macro","meso","micro","formal","informal"],
+    m:"El nivel macro es de dimensión formal: políticas, normativas y órganos estatales o autonómicos. El nivel meso combina lo formal y lo informal: estructura interna, equipos docentes, órganos de coordinación, consejos escolares y departamentos. El nivel micro es de dimensión informal: la vida cotidiana del aula, las relaciones sociales tangibles y la cultura y valores institucionales en práctica. Los tres son interdependientes."},
+   {p:"¿Qué función cumple la PGA y por qué se vincula a la Memoria Final de Curso?",
+    clave:["PGA|programación general anual","curso|anual","objetivos|metas|PEC","memoria|evaluar|cumplido"],
+    m:"La Programación General Anual (PGA) organiza la actividad del curso y concreta las metas del PEC; se elabora en los dos primeros meses del curso académico. Se vincula a la Memoria Final de Curso porque esta cierra el ciclo evaluando si se han cumplido los objetivos previstos. Así se garantiza coherencia entre lo planificado al inicio y lo logrado al final, retroalimentando la planificación del curso siguiente."},
+   {p:"¿Por qué el consejo escolar es la expresión del principio de participación en el centro?",
+    clave:["consejo escolar","participación","profesorado|familias|alumnado|PAS|sectores","jerarquía|democrá|decisiones"],
+    m:"El consejo escolar desarrolla el principio de participación a nivel micro porque es el espacio donde confluyen profesorado, familias, alumnado y personal de administración y servicios. Garantiza que el funcionamiento institucional no dependa exclusivamente de la jerarquía, sino que las decisiones incorporen las voces de todos los sectores de la comunidad educativa, dotándolas de mayor legitimidad democrática."},
+   {p:"¿Cómo puede la organización informal ser a la vez un recurso positivo y un obstáculo? Da ejemplos.",
+    clave:["positivo|recurso|colaboración|confianza","obstáculo|bloque|cerrado|innovación","redes|grupos|poder"],
+    m:"La organización informal es un recurso positivo cuando fomenta la colaboración y la confianza entre docentes, facilitando proyectos comunes. Pero es un obstáculo si cristaliza en grupos cerrados que bloquean la innovación o en redes de poder que resisten el cambio. Por ejemplo, un claustro con buena cultura de apoyo impulsa una reforma, mientras que un grupo cerrado de veteranos puede frenar una propuesta aunque haya sido aprobada formalmente."}
+  ]
+ },
+ {
+  titulo:"Bloque II · Temas 3 y 4: Cultura, micropolítica y liderazgo",
+  preguntas:[
+   {p:"¿Por qué se dice que las creencias profundas de una cultura cambian más lentamente que las normas formales?",
+    clave:["creencias|valores|profund","normas formales|reglas","lento|lentamente|tiempo","experiencia|diálogo","sostenible|alinea"],
+    m:"Porque las normas formales pueden modificarse por decreto de un día para otro, pero las creencias, emociones y formas de relación se transforman lentamente, solo a través de la experiencia y el diálogo. Por eso ningún cambio estructural es sostenible si no se alinea con los valores y significados compartidos por la comunidad: imponer una norma sin trabajar la cultura subyacente produce resistencia o cumplimiento meramente aparente."},
+   {p:"Explica la idea de que «el poder circula y se redistribuye» en la micropolítica escolar.",
+    clave:["poder","circula|redistribuye|no estable|no fijo","situaci|alianza|decisi","cargo|figura|dirección"],
+    m:"En la micropolítica el poder no reside de manera estable en una figura o cargo, sino que circula y se redistribuye continuamente según las situaciones, las alianzas y las decisiones que se toman. La escuela funciona también mediante redes informales de confianza, intercambio y legitimidad. Por eso una persona sin cargo formal puede tener gran influencia, y la dirección no controla todo el poder real del centro."},
+   {p:"¿Qué significa que una organización democrática «no suprime la micropolítica, sino que la gobierna»?",
+    clave:["no suprime|no elimina","transparente|constructiv","tensión|discrepancia|conflicto","innovación|oportunidad|diálogo"],
+    m:"Significa que la micropolítica —relaciones de poder, intereses y negociaciones— es inevitable en toda organización, por lo que el objetivo no es eliminarla sino gobernarla de manera transparente y constructiva. Las tensiones y discrepancias pueden transformarse en oportunidades de innovación si se abordan con apertura, comunicación y respeto. Gobernarla bien convierte el conflicto potencial en participación y mejora institucional."},
+   {p:"Relaciona el ámbito simbólico de la micropolítica con el clima organizativo.",
+    clave:["simbólic","lenguaje|gestos|rituales|reconocimiento","pertenencia|clima","construye|erosiona"],
+    m:"El ámbito simbólico se expresa mediante el lenguaje, los gestos de reconocimiento y los rituales de autoridad o exclusión. Estos elementos construyen o erosionan la cultura de pertenencia y, con ella, el clima organizativo. Un reconocimiento público refuerza el sentido de equipo, mientras que gestos de exclusión deterioran la cohesión. Por eso lo simbólico, aunque sutil, tiene efectos reales sobre la motivación y el compromiso."},
+   {p:"¿Por qué se afirma que «ningún cambio educativo es sostenible si cultura y micropolítica no están alineadas»?",
+    clave:["cultura","micropolítica","alinead|coheren|integra","valores|práctica|acción","sostenible|cambio"],
+    m:"Porque la cultura aporta los valores y significados que orientan la acción, mientras la micropolítica determina cómo esos valores se negocian y aplican en la práctica. Si los valores declarados (cultura) no se traducen en las dinámicas reales de poder y decisión (micropolítica), aparece una desconexión entre discurso y acción que vacía cualquier reforma. El cambio sostenible exige coherencia entre lo que se dice valorar y cómo realmente se decide y se actúa."},
+   {p:"¿Qué distingue al liderazgo sostenible de un liderazgo basado en líderes carismáticos?",
+    clave:["sostenible","carismático|persona concreta|individuo","estructuras|procesos|permanecen","continuidad|perdur|huella","recursos|emocional|agotar"],
+    m:"El liderazgo sostenible no se basa en líderes carismáticos ni depende de personas concretas, sino en estructuras y procesos que permanecen en el tiempo. Busca dejar una huella organizativa sólida y proyectos que perduren sin agotar los recursos humanos ni emocionales. Mientras el liderazgo carismático produce efectos rápidos pero frágiles ligados a un individuo, el sostenible asegura continuidad institucional formando nuevos líderes y documentando procesos."},
+   {p:"Explica por qué «la colaboración no equivale a uniformidad» en los equipos docentes.",
+    clave:["colaboración|colaborar","uniformidad|igual|pensar igual","diversidad|estilos|diferencia","metas comunes|juntos|colegiad"],
+    m:"Porque un equipo eficaz reconoce la diversidad de estilos, trayectorias y competencias profesionales, pero los articula en torno a metas comunes. Lo esencial no es pensar igual, sino aprender a pensar juntos, valorando la diferencia como fuente de aprendizaje y construyendo decisiones colegiadas. La uniformidad empobrece al equipo; la colaboración auténtica integra perspectivas distintas orientándolas al bienestar del alumnado y del profesorado."},
+   {p:"¿Por qué se dice que el trabajo en equipo «no surge de manera espontánea»?",
+    clave:["no espontáneo|intencion","estructuras|coordinación|tiempos","liderazgo pedagógico|facilita|reflexión","autonomía|responsabilidad"],
+    m:"Porque requiere una intencionalidad institucional: necesita estructuras de coordinación, tiempos protegidos y un liderazgo pedagógico que facilite la reflexión sobre la práctica. Los equipos son eficaces cuando combinan autonomía profesional con responsabilidad colectiva, y eso exige condiciones organizativas creadas a propósito. Además demanda gestión emocional y relacional, pues trabajar en equipo implica negociar perspectivas y resolver conflictos con competencias comunicativas y empatía."},
+   {p:"¿Qué quiere decir que la fuerza del proyecto de centro «no está en la extensión, sino en la apropiación»?",
+    clave:["apropiación|apropiar","extensión|largo|texto","unilateral|impuesto|vacío|formalidad","participación|comunidad|consenso"],
+    m:"Significa que un proyecto largo y detallado no vale de nada si la comunidad no lo siente como propio. Un texto elaborado de manera unilateral o impuesto desde la dirección corre el riesgo de convertirse en una formalidad vacía, desconectada de la vida escolar. La apropiación se logra mediante la participación de docentes, familias y alumnado en su elaboración, lo que genera corresponsabilidad y refuerza la legitimidad institucional."},
+   {p:"¿Cómo contribuye el liderazgo distribuido a la elaboración participativa del proyecto de centro?",
+    clave:["liderazgo distribuido|distribu","participación|miradas|aportar","corresponsabilidad|legitimidad","docente|familia|estudiante|sectores","condiciones|tiempo|información"],
+    m:"La participación en la elaboración del proyecto es una oportunidad para el liderazgo distribuido: cada docente, familia y grupo de estudiantes aporta una mirada específica que enriquece la visión y la hace más representativa. Este proceso fomenta el sentido de corresponsabilidad y fortalece la legitimidad institucional, ya que las decisiones se perciben como fruto del consenso y no de la imposición. Requiere condiciones claras: tiempos de reflexión, información transparente y liderazgo facilitador."}
+  ]
+ },
+ {
+  titulo:"Bloque III · Temas 5 y 6: Comunicación, dirección y gestión",
+  preguntas:[
+   {p:"¿Por qué la comunicación interna es «un instrumento de liderazgo pedagógico» y no solo un medio para dar instrucciones?",
+    clave:["liderazgo pedagógico","relaciones|confianza|sentido","coherencia|credibilidad|fuera","clima|bienestar|cohesión"],
+    m:"Porque comunicar no es solo transmitir instrucciones: construye relaciones, genera confianza y otorga sentido al trabajo colectivo. Una comunicación interna bidireccional y transparente refleja un liderazgo abierto, modela el clima laboral y condiciona la implicación del profesorado. Comunicar bien hacia dentro proyecta coherencia y credibilidad hacia fuera. Por eso es un instrumento de liderazgo pedagógico que influye en la cohesión, la innovación y el bienestar institucional."},
+   {p:"Diferencia entre el canal informal y el canal simbólico de la comunicación interna.",
+    clave:["informal","simbólic","conversaciones|espontáne|apoyo|colegas","gestos|reconocimiento|narrativa","pertenencia|clima emocional|identidad"],
+    m:"El canal informal está formado por conversaciones espontáneas y apoyos entre colegas, y su función es generar clima emocional y sentimiento de pertenencia. El canal simbólico se expresa mediante gestos, reconocimientos y narrativa institucional, y su función es construir identidad y sentido. El primero opera en lo relacional cotidiano; el segundo en lo identitario y cultural. Ambos complementan al canal formal de reuniones, actas y plataformas."},
+   {p:"¿Qué significa la frase «comunicar no es hablar mucho, sino escuchar con intención y responder con claridad»?",
+    clave:["escuchar|escucha activa","intención|claridad","confianza|respeto","colegiado|equipo|calidad"],
+    m:"Significa que la calidad de la comunicación no depende de la cantidad de mensajes, sino de la escucha activa con intención y de respuestas claras. El trabajo colegiado solo se consolida cuando la interacción se guía por la confianza y el respeto mutuo. Hablar mucho sin escuchar genera ruido y desgaste; escuchar bien y responder con claridad construye significado compartido y fortalece el vínculo profesional del equipo docente."},
+   {p:"Explica el componente digital de la comunicación interna y las nuevas competencias que exige.",
+    clave:["digital","sintetizar|síntesis","tiempos|respetar|saturación","asertiv|claridad","plataforma|herramienta"],
+    m:"El componente digital exige nuevas competencias comunicativas: saber sintetizar la información, respetar los tiempos y los espacios personales, y comunicarse de forma asertiva en entornos virtuales. Un uso inadecuado de las herramientas digitales satura y desgasta, por lo que conviene unificar plataformas y limitar la mensajería a asuntos urgentes mediante normas consensuadas. Bien gestionado, el canal digital favorece la accesibilidad y la trazabilidad sin generar sobrecarga."},
+   {p:"¿Qué tres acciones articulan el ejemplo de plan de comunicación pedagógica en un centro diverso, y qué resultados produce?",
+    clave:["cuaderno digital|seguimiento","reuniones mensuales|coordinación","sesiones trimestrales|tutores|especialistas|educadores","malentendidos|coherencia|participación"],
+    m:"El plan se articula en tres acciones: (1) crear un cuaderno digital compartido para el seguimiento del alumnado; (2) celebrar reuniones mensuales breves centradas en la coordinación metodológica; y (3) realizar sesiones trimestrales conjuntas entre tutores, especialistas y educadores sociales. Los resultados son menos malentendidos, mayor coherencia de las intervenciones y más participación docente, mostrando que una comunicación sistemática mejora la cohesión y la calidad educativa."},
+   {p:"¿Qué significa que la organización escolar es un «ecosistema vivo» que necesita estructuras flexibles?",
+    clave:["ecosistema|sistema|vivo|abierto","flexible|adapta|cambio","liderazgo compartido|participación|innovación","burocrático|jerárquico|insuficiente"],
+    m:"Significa que los centros operan en entornos de complejidad, diversidad y cambio continuo, donde la organización es una red de interacciones entre personas, procesos y contextos que determinan la calidad educativa. Los modelos burocráticos o jerárquicos ya no bastan: se necesitan estructuras flexibles, liderazgo compartido y una gestión que integre innovación, participación y equidad. Como ecosistema vivo, la organización debe adaptarse sin perder coherencia ni su proyecto educativo."},
+   {p:"En la versatilidad organizativa, ¿qué se entiende por «respuesta inteligente» y por «versatilidad emocional»?",
+    clave:["respuesta inteligente|adaptar","coherencia|no improvisar","versatilidad emocional|emocion","bienestar|salud|personal"],
+    m:"La respuesta inteligente consiste en adaptarse a las circunstancias sin perder coherencia, es decir, sin improvisar ni renunciar al proyecto del centro. La versatilidad emocional consiste en cuidar el bienestar y la salud organizacional del personal, atendiendo a las personas como condición para sostener el proyecto. Ambas, junto al equilibrio de los tres planos y la evaluación institucional, son claves de una organización versátil del siglo XXI."},
+   {p:"Según el contraste tradicional/innovador, ¿cómo cambia la gestión del cambio y la concepción de la innovación?",
+    clave:["gestión del cambio","puntual|fragmentada","sostenible|planificada|continuidad","innovación","externos|adoptados","cultural|integrada"],
+    m:"En la gestión tradicional el cambio es puntual y fragmentado, mientras que en la innovadora es sostenible, planificado y con continuidad. Respecto a la innovación, la gestión tradicional adopta proyectos externos de forma aislada, mientras la innovadora la concibe como práctica cultural y organizativa integrada. La innovación real no consiste en multiplicar proyectos, sino en construir una cultura institucional capaz de aprender de sí misma; liderar es sostener el sentido y la confianza."},
+   {p:"¿Qué aporta la idea de «liderar es sostener» a la concepción de la dirección eficaz?",
+    clave:["sostener","sentido|confianza|equilibrio","cambio|estabilidad","emocional|vínculos|reconoce","sistémica|pedagógic"],
+    m:"«Liderar es sostener» implica que la dirección eficaz no se mide por la magnitud del cambio inmediato, sino por su capacidad de mantener el sentido, la confianza y el equilibrio entre cambio y estabilidad. Una dirección eficaz tiene mirada sistémica (conecta lo técnico, lo humano y lo ético), media entre estabilidad e innovación, concibe la evaluación como aprendizaje y atiende la dimensión emocional reconociendo el esfuerzo y cuidando los vínculos del profesorado."},
+   {p:"¿Qué condiciones diferencian una participación auténtica de una participación meramente formal?",
+    clave:["información accesible|comprensible|antelación","debate horizontal|metodologías participativas","seguimiento|evaluación|acuerdos","impacto|voz|tiempo|transparencia|confianza"],
+    m:"La participación auténtica exige información accesible y oportuna (documentos comprensibles entregados con antelación), espacios de debate horizontal (grupos de trabajo, dinámicas de consenso, foros) y seguimiento y evaluación de los acuerdos para garantizar su ejecución e impacto. La participación formal, en cambio, se limita a votar o ratificar sin información ni debate reales. Cuando la comunidad percibe que su voz tiene impacto aumentan la motivación, la implicación y la cohesión; requiere tiempo, transparencia y confianza."}
+  ]
+ },
+ {
+  titulo:"Bloque IV · Temas 7 y 8: Estructuras, planificación y RR. HH.",
+  preguntas:[
+   {p:"¿Por qué una formalización equilibrada «aporta seguridad organizativa sin generar rigidez»?",
+    clave:["formalización","procedimientos|estandariz|normas","seguridad|previsible|estabilidad","rigidez|exceso|equilibr"],
+    m:"La formalización define el grado en que los procedimientos están estandarizados. Un grado equilibrado aporta seguridad organizativa porque hace el trabajo más previsible y las decisiones más estables, pero sin caer en la rigidez burocrática que ahoga la iniciativa profesional. Demasiada formalización paraliza y demasiada poca genera incertidumbre; el punto adecuado combina reglas claras con margen de actuación, en coherencia con el proyecto educativo del centro."},
+   {p:"¿Qué relación hay entre la complejidad organizativa y la necesidad de coordinación?",
+    clave:["complejidad","niveles|jerárquicos|equipos|funciones","coordinación","mayor|más importante|aumenta"],
+    m:"La complejidad describe el número de niveles jerárquicos, equipos y funciones diferenciadas de un centro. A mayor complejidad, más importante se vuelve la coordinación, porque crece el riesgo de descoordinación, duplicidades y pérdida de coherencia entre las partes. Por eso los centros complejos necesitan estructuras de coordinación docente sólidas (CCP, departamentos, equipos) que articulen la información y aseguren decisiones alineadas con el proyecto común."},
+   {p:"Explica el principio de centralización y por qué «la autonomía operativa con rendición de cuentas» es su punto de equilibrio.",
+    clave:["centralización","decisiones|concentran|dónde","autonomía operativa","rendición de cuentas","equilibrio|eficaz"],
+    m:"La centralización indica dónde se concentran las decisiones del centro. Su punto de equilibrio más eficaz es la autonomía operativa con rendición de cuentas: los equipos y profesionales disponen de margen para decidir en su ámbito, pero responden de sus resultados. Una centralización excesiva ahoga la iniciativa y ralentiza la respuesta; una descentralización sin control genera dispersión. El equilibrio combina libertad de acción con responsabilidad y transparencia."},
+   {p:"¿Qué quiere decir que «la coordinación no consiste en reunirse, sino en pensar juntos»?",
+    clave:["reunirse|reunión","pensar juntos|reflexión|criterios comunes","acuerdos verificables|verificable","aula|mejora|real"],
+    m:"Significa que el valor de la coordinación no está en la mera celebración de reuniones, sino en la reflexión compartida que produce criterios comunes. Cada reunión debe generar acuerdos verificables que se traduzcan en mejoras reales en el aula. Reunirse sin producir decisiones aplicables es tiempo perdido; pensar juntos implica analizar evidencias, consensuar criterios y comprometerse con acciones concretas. La CCP es el espacio de síntesis que articula esa coordinación entre etapas y departamentos."},
+   {p:"Diferencia entre planificación deliberada y planificación emergente y explica por qué se necesitan ambas.",
+    clave:["deliberada","emergente|ajusta|experiencia","antelación|previsto|decide","flexibilidad|cambio|complementar"],
+    m:"La planificación deliberada es lo que el centro decide con antelación, fijando objetivos y líneas de acción. La planificación emergente es lo que se va ajustando a partir de la experiencia y de lo que sucede en la práctica. Se necesitan ambas porque, sin la deliberada, el centro pierde rumbo y previsibilidad; sin la emergente, pierde flexibilidad para corregir lo que no funciona. Combinadas, garantizan coherencia y capacidad de adaptación."},
+   {p:"Explica los tres principios de la planificación institucional: coherencia, evidencia y flexibilidad.",
+    clave:["coherencia","documentos|relacionados|articulados","evidencia|datos|experiencia","flexibilidad|cambios|ajustar"],
+    m:"La coherencia exige que los distintos documentos del centro (PEC, PGA, Memoria) estén relacionados entre sí formando un conjunto articulado. La evidencia implica apoyar la planificación en datos y en la experiencia real del centro, no en suposiciones. La flexibilidad significa que planificar no es fijar todo de antemano, sino tener capacidad de introducir cambios cuando algo no funciona. Los tres principios juntos hacen que la planificación sea útil, realista y adaptable."},
+   {p:"Describe el horizonte temporal y la función de cada documento: PEC, PGA y Memoria Anual.",
+    clave:["PEC","3 a 5 años|3-5|largo|identidad","PGA|programación|curso|operativ","memoria|resultados|mejora|cierra"],
+    m:"El PEC (Proyecto Educativo de Centro) establece la identidad institucional —misión, valores y grandes líneas pedagógicas— con un horizonte de tres a cinco años. La PGA (Programación General Anual) traduce el PEC en objetivos operativos para un curso académico concreto, con responsables y cronograma. La Memoria Anual de Evaluación cierra el ciclo recogiendo resultados, dificultades y propuestas de mejora para el curso siguiente. Juntos forman un ciclo de planificación coherente."},
+   {p:"¿Por qué seleccionar al personal es «alinear capacidades individuales con los objetivos del proyecto educativo»?",
+    clave:["selección|seleccionar|personal","perfil|formación|experiencia","proyecto|encaja|objetivos","educativa|no solo administrativa"],
+    m:"Porque la gestión de RR. HH. es el eje vertebrador de la organización y las personas son su motor. Seleccionar implica valorar la dimensión educativa del perfil —formación, experiencia y forma de entender la educación— y pensar si encaja con el proyecto del centro, no solo cubrir una plaza administrativamente. Y la dimensión organizativa exige distribuir funciones y roles de forma clara y ajustada a las necesidades reales. Así las capacidades individuales se ponen al servicio de los objetivos comunes."},
+   {p:"Relaciona el desarrollo profesional y el clima laboral a través de sus cuatro dimensiones.",
+    clave:["desarrollo profesional","clima laboral|clima","organizativa|relacional|cultural|emocional","refuerzan|mutuamente|círculo"],
+    m:"El desarrollo profesional y el clima laboral se refuerzan mutuamente y se articulan en cuatro dimensiones: organizativa (distribución de tiempos, cargas y espacios de coordinación), relacional (calidad de las relaciones, apoyo mutuo y reconocimiento), cultural (valores y formas compartidas de entender el trabajo) y emocional (bienestar, gestión del estrés y satisfacción). Un centro que cuida formación, participación y reconocimiento mejora el clima, y un buen clima facilita a su vez el desarrollo profesional."},
+   {p:"¿Por qué la evaluación del desempeño debe ser formativa y qué tres principios garantizan que sea justa?",
+    clave:["formativ|aprendizaje|no control","transparencia|criterios conocidos","utilidad|acción|mejora","participación|implica|evaluados"],
+    m:"La evaluación del desempeño debe concebirse como proceso formativo y no como mecanismo de control, porque su objetivo es promover el aprendizaje profesional y fortalecer la calidad institucional; entendida como control, genera resistencia y falsea conductas. Una evaluación justa responde a tres principios: transparencia (criterios conocidos y compartidos), utilidad (orientada a la acción y la mejora) y participación (implicación de quienes serán evaluados). Solo así se convierte en motor de desarrollo profesional."}
+  ]
+ }
+];
+
+// ---------- RENDER ----------
+let idGlobal = 0;
+const datos = []; // {clave, m, idx}
+const cont = document.getElementById('contenedor');
+
+bloques.forEach(bloque=>{
+  const h = document.createElement('div');
+  h.className='bloque-tit';
+  h.textContent=bloque.titulo;
+  cont.appendChild(h);
+  bloque.preguntas.forEach(q=>{
+    const i = idGlobal++;
+    datos.push({clave:q.clave, m:q.m});
+    const card=document.createElement('div');
+    card.className='card';
+    card.innerHTML=`
+      <div class="preg"><span class="num">P${i+1}.</span> ${q.p}</div>
+      <textarea id="ta${i}" placeholder="Escribe aquí tu respuesta..."></textarea>
+      <div class="pista">Conceptos clave a cubrir: ${q.clave.length}</div>
+      <div class="acciones">
+        <button class="btn-corr" onclick="corregir(${i})">Corregir</button>
+        <button class="btn-sol" onclick="verModelo(${i})">Ver respuesta modelo</button>
+      </div>
+      <div class="resultado" id="res${i}"></div>`;
+    cont.appendChild(card);
+  });
+});
+
+// ---------- PERSISTENCIA (localStorage) ----------
+const STORE_KEY = 'testInteractivoUIV_v1';
+function guardar(){
+  try{
+    const estado = datos.map((d,i)=>({
+      t: document.getElementById('ta'+i).value,
+      c: typeof d.pct==='number'
+    }));
+    localStorage.setItem(STORE_KEY, JSON.stringify(estado));
+  }catch(e){ /* modo privado o sin soporte: se ignora */ }
+}
+function restaurar(){
+  let raw;
+  try{ raw = localStorage.getItem(STORE_KEY); }catch(e){ return; }
+  if(!raw) return;
+  let estado;
+  try{ estado = JSON.parse(raw); }catch(e){ return; }
+  if(!Array.isArray(estado)) return;
+  estado.forEach((s,i)=>{
+    if(i>=datos.length || !s) return;
+    const ta = document.getElementById('ta'+i);
+    if(ta && s.t) ta.value = s.t;
+    if(s.c) corregir(i); // regenera la corrección guardada
+  });
+  actualizarMarcador();
+}
+// guarda mientras se escribe (un solo listener para todos los textarea)
+cont.addEventListener('input', e=>{ if(e.target.tagName==='TEXTAREA') guardar(); });
+
+// ---------- LÓGICA DE CORRECCIÓN ----------
+function normaliza(t){
+  return t.toLowerCase()
+    .normalize("NFD").replace(/[̀-ͯ]/g,"") // quita acentos
+    .replace(/[^a-z0-9ñ\s|]/g," ");
+}
+function conceptoPresente(texto, concepto){
+  // concepto puede tener variantes separadas por |
+  const variantes = concepto.split("|").map(v=>normaliza(v).trim()).filter(Boolean);
+  return variantes.some(v=> texto.includes(v));
+}
+function corregir(i){
+  const txt = normaliza(document.getElementById('ta'+i).value);
+  const res = document.getElementById('res'+i);
+  if(!txt.trim()){
+    res.style.display='block';
+    res.innerHTML='<div class="puntuacion" style="color:var(--ambar)">Escribe una respuesta antes de corregir.</div>';
+    actualizarMarcador();
+    return;
+  }
+  const clave = datos[i].clave;
+  let aciertos=0;
+  let chips='';
+  clave.forEach(c=>{
+    const ok = conceptoPresente(txt, c);
+    if(ok) aciertos++;
+    const etiqueta = c.split("|")[0];
+    chips += `<span class="chip ${ok?'ok':'no'}">${ok?'✓':'✗'} ${etiqueta}</span>`;
+  });
+  const pct = Math.round(aciertos/clave.length*100);
+  let color = pct>=70?'var(--verde)': pct>=40?'var(--ambar)':'var(--rojo)';
+  let nota = pct>=70?'¡Bien! Cubres lo esencial.': pct>=40?'Aceptable, faltan conceptos.':'Repasa: faltan ideas clave.';
+  datos[i].pct = pct;
+  res.style.display='block';
+  res.innerHTML=`
+    <div class="puntuacion" style="color:${color}">Puntuación: ${pct}% (${aciertos}/${clave.length} conceptos) — ${nota}</div>
+    <div class="conceptos">${chips}</div>
+    <div class="modelo"><strong>Respuesta modelo:</strong> ${datos[i].m}</div>`;
+  actualizarMarcador();
+  guardar();
+}
+function verModelo(i){
+  const res = document.getElementById('res'+i);
+  res.style.display='block';
+  if(!res.querySelector('.modelo')){
+    res.innerHTML = `<div class="modelo"><strong>Respuesta modelo:</strong> ${datos[i].m}</div>` + res.innerHTML;
+  }
+}
+function mostrarTodas(){ for(let i=0;i<datos.length;i++) verModelo(i); }
+function corregirTodo(){ for(let i=0;i<datos.length;i++) corregir(i); }
+function reiniciar(){
+  if(!confirm('¿Borrar todas tus respuestas y correcciones?')) return;
+  for(let i=0;i<datos.length;i++){
+    document.getElementById('ta'+i).value='';
+    const r=document.getElementById('res'+i); r.style.display='none'; r.innerHTML='';
+    delete datos[i].pct;
+  }
+  try{ localStorage.removeItem(STORE_KEY); }catch(e){}
+  actualizarMarcador();
+}
+function actualizarMarcador(){
+  const corregidas = datos.filter(d=>typeof d.pct==='number');
+  const m=document.getElementById('marcador');
+  if(corregidas.length===0){ m.textContent='Sin corregir'; return; }
+  const media = Math.round(corregidas.reduce((a,d)=>a+d.pct,0)/corregidas.length);
+  m.textContent=`Corregidas: ${corregidas.length}/${datos.length} · Media: ${media}%`;
+}
+
+// ---------- AL ARRANCAR: recuperar lo guardado ----------
+restaurar();
+</script>
+</body>
+</html>
